@@ -1,0 +1,32 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="row py-2">
+    <div class="col-offset-1 col-11">
+        <div class="conteiner offset-1 bg-secondary rounded-5">
+            <div class="row py-2">
+                <div class="col-4 offset-1"><h3>Společnost:</h3></div>
+                <div class="col-6"><h2 class="text-end">{{stock.name}}</h2></div>
+            </div>
+            <form action="#" method="POST">
+                <div class="row">
+                    <div class="col-4 offset-1"><h3>Procento:</h3></div>
+                    <div class="col-6"><h2 class="text-end">{{stock.percentage}}</h2></div>
+                    <div class="col-6"><h3 class="text-end">Kolik procent chceš prodat: </h3></div>
+                    <input type="amount" class="form-control" id="amount" name="amount">
+                </div>
+                <div class="row">
+                    <div class="col-6"><h3 class="text-end">Vyvolávací cena</h3></div>
+                    <input type="price" class="form-control" id="price" name="price">
+                </div>
+                
+                <div class="row py-2">
+                    <div class="col-4 offset-1">
+                        <button type="submit" class="btn btn-primary">Prodat</button>
+                    </div>
+            </form>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
