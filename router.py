@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, session, flash
 from database import User, Stock, StockSell
-from app import app, db
+from app import app, db, scheduler
 from hashlib import sha256
 import datetime
 
@@ -142,7 +142,6 @@ def sellStock(stock_id=-1):
         return redirect(url_for("login"))
     if (request.method == "GET") and (int(stock_id) < 0):
         stocks = Stock.query.filter_by(owner=session["user"]).all()
-        for stock in stocks: print(stock.isSelling)
         return render_template("sell.html", stocks=stocks, logged=True)
     elif (request.method == "GET") and (int(stock_id) >= 0):
         stock = Stock.query.filter_by(_id=stock_id).first()
@@ -223,8 +222,7 @@ def stockBuy(stockBuyID):
             return redirect(url_for("home"))
         elif datetime.datetime.now() > stockSell.sell_end:
             flash("Čas vypršel...")
-            db.session.delete(stockSell)
-            stock.isSelling = False
+            checkStockSellsEnd()
             db.session.commit()
             return redirect(url_for("home"))
         elif session["user"] == stockSell.old_owner:
@@ -236,4 +234,32 @@ def stockBuy(stockBuyID):
         stockSell.cost = new_price
         db.session.commit()
         return redirect(f"/buy/{stockBuyID}")
-        
+
+@scheduler.task('interval', id='do_job_1', seconds=60, misfire_grace_time=900)
+def checkStockSellsEnd():
+    print("Spuštěno")
+    with app.app_context():
+        stockSells = StockSell.query.all()
+        for stockSell in stockSells:
+            if datetime.datetime.now() > stockSell.sell_end:
+                stock = Stock.query.filter_by(_id=stockSell.stockID).first()
+                if stockSell.new_owner:
+                    oldUser = User.query.filter_by(name=stockSell.old_owner).first()
+                    userStocks = Stock.query.filter_by(owner=new_owner).all()
+                    for s in userStocks:
+                        if stock.name == s.name:
+                            s.percentage += s.percentage
+                            db.session.delete(stock)
+                        else:
+                            stock.owner = stockSell.new_owner
+                    oldUser.Money += stockSell.cost
+                else:
+                    userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
+                    for s in userStocks:
+                        if stock.name == s.name:
+                            s.percentage += s.percentage
+                            db.session.delete(stock)
+                        else:
+                            stock.owner = stockSell.old_owner
+                db.session.delete(stockSell)
+        db.session.commit()
