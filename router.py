@@ -184,7 +184,15 @@ def buy():
         stock = Stock.query.filter_by(_id=s.stockID).first()
         stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost))
     if "user" in session:
-        return render_template("buy.html", stock_sells=stock_sells, logged=True)
+        return render_template("buy.html", stock_sells=stock_sells, logged=logged)
     else:
         return redirect(url_for("login"))
 
+@app.route("/buy/<stockSellID>", methods=["POST", "GET"])
+def stockSell(stockSellID):
+    if "user" in session:
+        stock_sell = StockSell
+        if request.method = "GET":
+            return render_template("") #musim jeste udelat
+    else:
+        return redirect(url_for("login"))
