@@ -157,7 +157,10 @@ def sellStock(stock_id=-1):
         if stock.owner != session["user"]:
             flash("Tuto akcii nevlastníš!")
             return redirect(url_for("home"))
-        if request.form["amount"].isdigit() and request.form["price"].isdigit:
+        elif stock.isSelling:
+            flash("Akcie je již v aukci.")
+            return redirect(url_for("home"))
+        elif request.form["amount"].isdigit() and request.form["price"].isdigit():
             per = int(request.form["amount"])
             cost = int(request.form["price"])
         else:
@@ -193,21 +196,34 @@ def buy():
     stockSells = StockSell.query.all()
     stock_sells = []
     for s in stockSells:
-        print(s, s.stockID)
         stock = Stock.query.filter_by(_id=s.stockID).first()
-        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost))
+        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id))
     if "user" in session:
         return render_template("buy.html", stock_sells=stock_sells, logged=True)
     else:
         return redirect(url_for("login"))
 
-@app.route("/buy/<stockSellID>", methods=["POST", "GET"])
-def stockSell(stockSellID):
+@app.route("/buy/<stockBuyID>", methods=["POST", "GET"])
+def stockBuy(stockBuyID):
     if  not "user" in session:
         return redirect(url_for("login"))
-    stock_sell = StockSell
+    stockSell = StockSell.query.filter_by(_id=stockBuyID).first()
+    stock = Stock.query.filter_by(_id=stockSell.stockID).first()
+    stock_sell = [stock.name, stockSell.old_owner, stock.percentage, stockSell.cost]
     if request.method == "GET":
-        return render_template("") #musim jeste udelat
+        return render_template("stockBuy.html", stock_sell=stock_sell, logged=True)
     elif request.method == "POST":
-        return ""
+        user = User.query.filter_by(name=session["user"]).first()
+        if not request.form["amount"].isdiget():
+            flash("Zadej cenu jako cislo!")
+            return redirect(url_for("home"))
+        new_price = int(request.form["amount"])
+        if new_price > user.money:
+            flash("Nemáš dostatek peněz.")
+            return redirect(url_for("home"))
+        elif datetime.datetime.now() > stockSell.sell_end:
+            flash("Čas vypršel...")
+            return redirect(url_for("home"))
+
+        return render_template("stockBuy.html", stock_sell=stock_sell, logged=True)
         

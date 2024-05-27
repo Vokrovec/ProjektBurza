@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+{% block content%}
+    <div class="row py-2">
+        <div class="col-offset-1 col-11">
+            <div class="conteiner offset-1 bg-secondary rounded-5">
+                <div class="row py-2">
+                    <div class="col-4 offset-1"><h3>Společnost:</h3></div>
+                    <div class="col-6"><h2 class="text-end">{{stock_sell[0]}}</h2></div>
+                </div>
+                <div class="row py-2">
+                    <div class="col-4 offset-1"><h3>Prodává:</h3></div>
+                    <div class="col-6"><h2 class="text-end">{{stock_sell[1]}}</h2></div>
+                </div>
+                <div class="row">
+                    <div class="col-4 offset-1"><h3>Procento:</h3></div>
+                    <div class="col-6"><h2 class="text-end">{{stock_sell[2]}}</h2></div>
+                </div>
+                <div class="row">
+                    <div class="col-4 offset-1"><h3>Poslední příhoz:</h3></div>
+                    <div class="col-6"><h2 class="text-end">{{stock_sell[3]}}</h2></div>
+                </div>
+                <form>
+                    <div class="row">
+                        <div class="col-4 offset-1"><h3>Kolik přohodit: </h3></div>
+                        <input type="text" class="form-control" id="amount" name="amount">
+                    </div>
+                    <div class="row py-2">
+                        <div class="col-4 offset-1">
+                            <button type="submit" class="btn btn-primary">Přihodit</button>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+{% endblock %}
