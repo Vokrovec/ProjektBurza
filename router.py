@@ -214,7 +214,7 @@ def stockBuy(stockBuyID):
         return render_template("stockBuy.html", stock_sell=stock_sell, logged=True)
     elif request.method == "POST":
         user = User.query.filter_by(name=session["user"]).first()
-        if not request.form["amount"].isdiget():
+        if not request.form["amount"].isdigit():
             flash("Zadej cenu jako cislo!")
             return redirect(url_for("home"))
         new_price = int(request.form["amount"])
@@ -223,7 +223,17 @@ def stockBuy(stockBuyID):
             return redirect(url_for("home"))
         elif datetime.datetime.now() > stockSell.sell_end:
             flash("Čas vypršel...")
+            db.session.delete(stockSell)
+            stock.isSelling = False
+            db.session.commit()
             return redirect(url_for("home"))
-
-        return render_template("stockBuy.html", stock_sell=stock_sell, logged=True)
+        elif session["user"] == stockSell.old_owner:
+            flash("Nemůžeš koupit svoji akcii.")
+            return redirect(url_for("home"))
+        elif new_price <= stockSell.cost:
+            flash("Nemůžeš přihodit méně, než je aktuální cena.")
+            return redirect(url_for("home"))
+        stockSell.cost = new_price
+        db.session.commit()
+        return redirect(f"/buy/{stockBuyID}")
         
