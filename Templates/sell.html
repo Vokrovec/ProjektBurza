@@ -14,7 +14,11 @@
                 </div>
                 <div class="row py-2">
                     <div class="col-4 offset-1">
-                        <button type="submit" class="btn btn-primary">Prodat</button>
+                {% if not stock.isSelling %}
+                        <button onclick="location.href = '/sell/{{stock._id}}';" class="btn btn-primary">Prodat</button>
+                {% else %}
+                        <h3>Akcie je v aukci.</h3>
+                {% endif %}
                     </div>
                 </div>
             </div>

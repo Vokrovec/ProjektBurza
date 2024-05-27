@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, session, flash
 from database import User, Stock, StockSell
 from app import app, db
 from hashlib import sha256
+import datetime
 
 with open("adminpassword.txt", "r") as f:
     adminPassword = f.read()
@@ -137,43 +138,55 @@ def adminLogout():
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<stock_id>", methods=["GET", "POST"])
 def sellStock(stock_id=-1):
-    if "user" in session:
-        if (request.method == "GET") and (int(stock_id) < 0):
-            stocks = Stock.query.filter_by(owner=session["user"]).all()
-            return render_template("sell.html", stocks=stocks, logged=True)
-        elif (request.method == "GET") and (int(stock_id) >= 0):
-            stock = Stock.query.filter_by(_id=stock_id).first()
-            stocks = Stock.query.all()
-            print(stocks)
-            if stock.owner == session["user"]:
-                return render_template("stockSell.html", stock=stock, logged=True)
-            else:
-                flash("Tuto akcii nevlastníš!")
-                return redirect(url_for("home"))
-        elif (request.method == "POST") and (int(stock_id) >= 0):
-            stock = Stock.query.filter_by(_id=stock_id).first()
-            if stock.owner == session["user"]:
-                per = int(request.form["amount"])
-                cost = int(request.form["price"])
-                old_stock = Stock.query.filter_by(_id=stock_id).first()
-                if per <= old_stock.percentage:
-                    old_stock.percentage -= per
-                    new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per)
-                    db.session.add(new_stock)
-                    db.session.flush()
-                    db.session.refresh(new_stock)
-                    if old_stock.percentage == 0:
-                        db.session.delete(old_stock)
-                    stock_sell = StockSell(old_owner=new_stock.owner, new_owner=None, stockID=new_stock._id, cost=cost)
-                    db.session.add(stock_sell)
-                    db.session.commit()
-                    return redirect(url_for("user"))
-                    
-            else:
-                flash("Tuto akcii nevlastníš!")
-                return redirect(url_for("home"))
-    else:
+    if not "user" in session:
         return redirect(url_for("login"))
+    if (request.method == "GET") and (int(stock_id) < 0):
+        stocks = Stock.query.filter_by(owner=session["user"]).all()
+        for stock in stocks: print(stock.isSelling)
+        return render_template("sell.html", stocks=stocks, logged=True)
+    elif (request.method == "GET") and (int(stock_id) >= 0):
+        stock = Stock.query.filter_by(_id=stock_id).first()
+        stocks = Stock.query.all()
+        if stock.owner == session["user"]:
+            return render_template("stockSell.html", stock=stock, logged=True)
+        else:
+            flash("Tuto akcii nevlastníš!")
+            return redirect(url_for("home"))
+    elif (request.method == "POST") and (int(stock_id) >= 0):
+        stock = Stock.query.filter_by(_id=stock_id).first()
+        if stock.owner != session["user"]:
+            flash("Tuto akcii nevlastníš!")
+            return redirect(url_for("home"))
+        if request.form["amount"].isdigit() and request.form["price"].isdigit:
+            per = int(request.form["amount"])
+            cost = int(request.form["price"])
+        else:
+            flash("Cena a množství musí být číslo.")
+            return redirect(url_for("home"))
+        minutes = int(request.form["minutes"])
+        old_stock = Stock.query.filter_by(_id=stock_id).first()
+        if per > old_stock.percentage:
+            flash("Tolik akcie nevlastníš.")
+            return redirect(url_for("home"))
+        elif per <= 0:
+            flash("Zadej kladné číslo.")
+            return redirect(url_for("home"))
+        endTime = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+        old_stock.percentage -= per
+        new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per)
+        new_stock.isSelling = True
+        db.session.add(new_stock)
+        db.session.flush()
+        db.session.refresh(new_stock)
+        if old_stock.percentage == 0:
+            db.session.delete(old_stock)
+        stock_sell = StockSell(old_owner=new_stock.owner, new_owner=None, stockID=new_stock._id, cost=cost, sell_end=endTime)
+        db.session.add(stock_sell)
+        db.session.commit()
+        return redirect(url_for("user"))
+            
+        
+    
 
 @app.route("/buy")
 def buy():
@@ -184,15 +197,17 @@ def buy():
         stock = Stock.query.filter_by(_id=s.stockID).first()
         stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost))
     if "user" in session:
-        return render_template("buy.html", stock_sells=stock_sells, logged=logged)
+        return render_template("buy.html", stock_sells=stock_sells, logged=True)
     else:
         return redirect(url_for("login"))
 
 @app.route("/buy/<stockSellID>", methods=["POST", "GET"])
 def stockSell(stockSellID):
-    if "user" in session:
-        stock_sell = StockSell
-        if request.method = "GET":
-            return render_template("") #musim jeste udelat
-    else:
+    if  not "user" in session:
         return redirect(url_for("login"))
+    stock_sell = StockSell
+    if request.method == "GET":
+        return render_template("") #musim jeste udelat
+    elif request.method == "POST":
+        return ""
+        
