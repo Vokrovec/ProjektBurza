@@ -248,14 +248,17 @@ def checkStockSellsEnd():
                 stock = Stock.query.filter_by(_id=stockSell.stockID).first()
                 if stockSell.new_owner:
                     oldUser = User.query.filter_by(name=stockSell.old_owner).first()
-                    userStocks = Stock.query.filter_by(owner=new_owner).all()
+                    newUser = User.query.filter_by(name=stockSell.new_owner).first()
+                    userStocks = Stock.query.filter_by(owner=stockSell.new_owner).all()
                     for s in userStocks:
                         if stock.name == s.name:
                             s.percentage += stock.percentage
                             db.session.delete(stock)
                         else:
                             stock.owner = stockSell.new_owner
-                    oldUser.Money += stockSell.cost
+                            stock.isSelling = False
+                    oldUser.money += stockSell.cost
+                    newUser.money -= stockSell.cost
                 else:
                     userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
                     for s in userStocks:
