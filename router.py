@@ -37,8 +37,9 @@ def login():
 @app.route("/user")
 def user():
     if "user" in session:
-        user = session["user"]
-        stocks = Stock.query.filter_by(owner=user).all()
+        usr = session["user"]
+        user = User.query.filter_by(name=usr).first()
+        stocks = Stock.query.filter_by(owner=usr).all()
         return render_template("user.html", usr=user, logged=True, stocks=stocks)
     else:
         return redirect(url_for("home"))
@@ -204,6 +205,7 @@ def buy():
 
 @app.route("/buy/<stockBuyID>", methods=["POST", "GET"])
 def stockBuy(stockBuyID):
+    checkStockSellsEnd()
     if  not "user" in session:
         return redirect(url_for("login"))
     stockSell = StockSell.query.filter_by(_id=stockBuyID).first()
@@ -235,11 +237,11 @@ def stockBuy(stockBuyID):
         db.session.commit()
         return redirect(f"/buy/{stockBuyID}")
 
-@scheduler.task('interval', id='do_job_1', seconds=60, misfire_grace_time=900)
+@scheduler.task('interval', id='do_job_1', seconds=60)
 def checkStockSellsEnd():
     print("Spuštěno")
     with app.app_context():
-        stockSells = StockS+ell.query.all()
+        stockSells = StockSell.query.all()
         for stockSell in stockSells:
             if datetime.datetime.now() > stockSell.sell_end:
                 stock = Stock.query.filter_by(_id=stockSell.stockID).first()
