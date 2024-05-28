@@ -1,5 +1,7 @@
 {% extends "main.html" %}
+
 {% block content %}
+
 <div class="row py-2">
     <div class="col-offset-1 col-11">
         <div class="conteiner offset-1 bg-secondary rounded-5">
@@ -18,9 +20,9 @@
                     <div class="col-6"><input type="amount" class="form-control" id="amount" name="amount"></div>
                 </div>
                 <div class="row">
-                    <div class="col-4 offset-1"><h3>Aukce na kolik minut?</h3></div>
+                    <div class="col-4 offset-1"><h3>Na jak dlouho: </h3></div>
                     <div class="col-6"><input type="range" min="20" max="100" value="50" class="slider" id="minutes" name="minutes"></div>
-                    
+                    <div class="col"><h4><span id="sliderValue"></span> minut</h4></div>
                 </div>
                 <div class="row">
                     <div class="col-4 offset-1"><h3>Vyvolávací cena</h3></div>
@@ -37,4 +39,6 @@
         </div>
     </div>
 </div>
+<script src="{{url_for('static', filename='sliderValue.js')}}"></script>
+
 {% endblock %}

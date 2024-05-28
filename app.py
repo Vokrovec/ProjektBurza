@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
-app = Flask(__name__, template_folder='Templates')
+app = Flask(__name__, template_folder='templates')
 app.secret_key="HovnoKleslo"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db = SQLAlchemy(app)
