@@ -239,7 +239,7 @@ def stockBuy(stockBuyID):
 def checkStockSellsEnd():
     print("Spuštěno")
     with app.app_context():
-        stockSells = StockSell.query.all()
+        stockSells = StockS+ell.query.all()
         for stockSell in stockSells:
             if datetime.datetime.now() > stockSell.sell_end:
                 stock = Stock.query.filter_by(_id=stockSell.stockID).first()
@@ -248,7 +248,7 @@ def checkStockSellsEnd():
                     userStocks = Stock.query.filter_by(owner=new_owner).all()
                     for s in userStocks:
                         if stock.name == s.name:
-                            s.percentage += s.percentage
+                            s.percentage += stock.percentage
                             db.session.delete(stock)
                         else:
                             stock.owner = stockSell.new_owner
@@ -257,7 +257,7 @@ def checkStockSellsEnd():
                     userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
                     for s in userStocks:
                         if stock.name == s.name:
-                            s.percentage += s.percentage
+                            s.percentage += stock.percentage
                             db.session.delete(stock)
                         else:
                             stock.owner = stockSell.old_owner
