@@ -233,6 +233,7 @@ def stockBuy(stockBuyID):
         elif new_price <= stockSell.cost:
             flash("Nemůžeš přihodit méně, než je aktuální cena.")
             return redirect(url_for("home"))
+        stockSell.new_owner = session["user"]
         stockSell.cost = new_price
         db.session.commit()
         return redirect(f"/buy/{stockBuyID}")
