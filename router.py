@@ -3,7 +3,9 @@ from database import User, Stock, StockSell
 from app import app, db, scheduler
 from hashlib import sha256
 import datetime
+from pytz import timezone
 
+TIMEZONE = timezone("Europe/Prague")
 with open("adminpassword.txt", "r") as f:
     adminPassword = f.read()
 @app.route("/")
@@ -174,7 +176,7 @@ def sellStock(stock_id=-1):
         elif per <= 0:
             flash("Zadej kladné číslo.")
             return redirect(url_for("home"))
-        endTime = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+        endTime = datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=minutes)
         old_stock.percentage -= per
         new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per)
         new_stock.isSelling = True
@@ -228,7 +230,7 @@ def stockBuy(stockBuyID):
         if new_price > user.money:
             flash("Nemáš dostatek peněz.")
             return redirect(url_for("home"))
-        elif datetime.datetime.now() > stockSell.sell_end:
+        elif datetime.datetime.now(TIMEZONE).replace(tzinfo=None) > stockSell.sell_end:
             flash("Čas vypršel...")
             checkStockSellsEnd()
             db.session.commit()
@@ -246,11 +248,12 @@ def stockBuy(stockBuyID):
 
 @scheduler.task('interval', id='do_job_1', seconds=60)
 def checkStockSellsEnd():
-    print("Spuštěno")
+    print(datetime.datetime.now(TIMEZONE))
     with app.app_context():
         stockSells = StockSell.query.all()
         for stockSell in stockSells:
-            if datetime.datetime.now() < stockSell.sell_end:
+            print(datetime.datetime.now(TIMEZONE).replace(tzinfo=None), stockSell.sell_end)
+            if datetime.datetime.now(TIMEZONE).replace(tzinfo=None) < stockSell.sell_end:
                 break
             stock = Stock.query.filter_by(_id=stockSell.stockID).first()
             if stockSell.new_owner:
