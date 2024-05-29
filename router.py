@@ -14,6 +14,7 @@ def home():
         logged = True
     else:
         logged = False
+    print("spusteno home")    
     return render_template("home.html", logged=logged)
 
 @app.route("/login", methods=["POST", "GET"])
