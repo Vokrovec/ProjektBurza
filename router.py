@@ -33,7 +33,6 @@ def login():
     elif request.method == "GET":
         return render_template("login.html", logged=False)
     
-    
 @app.route("/user")
 def user():
     if "user" in session:
@@ -198,7 +197,9 @@ def buy():
     stock_sells = []
     for s in stockSells:
         stock = Stock.query.filter_by(_id=s.stockID).first()
-        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id))
+        end_time = "%s:%s" % (s.sell_end.hour, s.sell_end.minute)
+        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id, end_time, s.sell_end))
+    stock_sells.sort(key=lambda a: a[6])
     if "user" in session:
         return render_template("buy.html", stock_sells=stock_sells, logged=True)
     else:
@@ -209,7 +210,11 @@ def stockBuy(stockBuyID):
     checkStockSellsEnd()
     if  not "user" in session:
         return redirect(url_for("login"))
-    stockSell = StockSell.query.filter_by(_id=stockBuyID).first()
+    stockSell = StockSell.query.filter_by(_id=stockBuyID).all()
+    if not stockSell:
+        flash("Aukce již skončila")
+        return redirect(url_for("buy"))
+    stockSell = stockSell[0]
     stock = Stock.query.filter_by(_id=stockSell.stockID).first()
     stock_sell = [stock.name, stockSell.old_owner, stock.percentage, stockSell.cost]
     if request.method == "GET":
@@ -252,7 +257,7 @@ def checkStockSellsEnd():
                     newUser = User.query.filter_by(name=stockSell.new_owner).first()
                     userStocks = Stock.query.filter_by(owner=stockSell.new_owner).all()
                     for s in userStocks:
-                        if stock.name == s.name:
+                        if stock.name == s.name and not s.isSelling:
                             s.percentage += stock.percentage
                             db.session.delete(stock)
                         else:
@@ -263,7 +268,7 @@ def checkStockSellsEnd():
                 else:
                     userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
                     for s in userStocks:
-                        if stock.name == s.name:
+                        if stock.name == s.name and not s.isSelling:
                             s.percentage += stock.percentage
                             db.session.delete(stock)
                         else:
