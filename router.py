@@ -157,11 +157,12 @@ def sellStock(stock_id=-1):
         if stock.owner != session["user"]:
             flash("Tuto akcii nevlastníš!")
             return redirect(url_for("home"))
+            
         elif stock.isSelling:
             flash("Akcie je již v aukci.")
             return redirect(url_for("home"))
-        elif request.form["amount"].isdigit() and request.form["price"].isdigit():
-            per = int(request.form["amount"])
+        elif request.form["percent"].isdigit() and request.form["price"].isdigit():
+            per = int(request.form["percent"])
             cost = int(request.form["price"])
         else:
             flash("Cena a množství musí být číslo.")
