@@ -12,7 +12,7 @@ def home():
         logged = True
     else:
         logged = False
-    return render_template("main.html", logged=logged)
+    return render_template("home.html", logged=logged)
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
