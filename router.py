@@ -189,15 +189,15 @@ def sellStock(stock_id=-1):
         return redirect(url_for("user"))
             
         
-    
 
 @app.route("/buy")
 def buy():
+    checkStockSellsEnd()
     stockSells = StockSell.query.all()
     stock_sells = []
     for s in stockSells:
         stock = Stock.query.filter_by(_id=s.stockID).first()
-        end_time = "%s:%s" % (s.sell_end.hour, s.sell_end.minute)
+        end_time = f"{s.sell_end.hour}:{s.sell_end.minute}"
         stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id, end_time, s.sell_end))
     stock_sells.sort(key=lambda a: a[6])
     if "user" in session:
