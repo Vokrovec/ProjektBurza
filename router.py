@@ -242,24 +242,26 @@ def stockBuy(stockBuyID):
         elif new_price <= stockSell.cost:
             flash("Nemůžeš přihodit méně, než je aktuální cena.")
             return redirect(url_for("home"))
+        if  stockSell.new_owner:
+            old_new_owner = User.query.filter_by(name=stockSell.new_owner).first()
+            old_new_owner.money += stockSell.cost
         stockSell.new_owner = session["user"]
+        user = User.query.filter_by(name=stockSell.new_owner).first()
+        user.money -= new_price
         stockSell.cost = new_price
         db.session.commit()
         return redirect(f"/buy/{stockBuyID}")
 
 @scheduler.task('interval', id='do_job_1', seconds=60)
 def checkStockSellsEnd():
-    print(datetime.datetime.now(TIMEZONE))
     with app.app_context():
         stockSells = StockSell.query.all()
         for stockSell in stockSells:
-            print(datetime.datetime.now(TIMEZONE).replace(tzinfo=None), stockSell.sell_end)
             if datetime.datetime.now(TIMEZONE).replace(tzinfo=None) < stockSell.sell_end:
                 break
             stock = Stock.query.filter_by(_id=stockSell.stockID).first()
             if stockSell.new_owner:
                 oldUser = User.query.filter_by(name=stockSell.old_owner).first()
-                newUser = User.query.filter_by(name=stockSell.new_owner).first()
                 userStocks = Stock.query.filter_by(owner=stockSell.new_owner).all()
                 for s in userStocks:
                     if stock.name == s.name and not s.isSelling:
@@ -269,7 +271,6 @@ def checkStockSellsEnd():
                         stock.owner = stockSell.new_owner
                         stock.isSelling = False
                 oldUser.money += stockSell.cost
-                newUser.money -= stockSell.cost
             else:
                 userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
                 for s in userStocks:
