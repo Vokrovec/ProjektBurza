@@ -267,9 +267,10 @@ def checkStockSellsEnd():
                     if stock.name == s.name and not s.isSelling:
                         s.percentage += stock.percentage
                         db.session.delete(stock)
-                    else:
-                        stock.owner = stockSell.new_owner
-                        stock.isSelling = False
+                        break
+                else:
+                    stock.owner = stockSell.new_owner
+                    stock.isSelling = False
                 oldUser.money += stockSell.cost
             else:
                 userStocks = Stock.query.filter_by(owner=stockSell.old_owner).all()
@@ -277,7 +278,8 @@ def checkStockSellsEnd():
                     if stock.name == s.name and not s.isSelling:
                         s.percentage += stock.percentage
                         db.session.delete(stock)
-                    else:
-                        stock.owner = stockSell.old_owner
+                        break
+                else:
+                    stock.owner = stockSell.old_owner
             db.session.delete(stockSell)
         db.session.commit()
