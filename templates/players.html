@@ -1,10 +1,21 @@
 {% extends "main.html"%}
 {% block content%}
     {% for usr in users %}
-            <div class="row">
-                <div class="col offset-1 --bs-border-color-translucent"><h4 class="text-light"><a href="stocks/{{usr.name}}">{{usr.name}}</a></h4></div>
-                <div class="col offset-1 --bs-border-color-translucent"><h4 class="text-light">{{usr.money}}</h4></div>
+        <div class="row py-2">
+            <div class="col col-11">
+                <div class="conteiner offset-1 bg-secondary rounded-5">
+                    <div class="row">
+                        <div class="col-9 offset-1 --bs-border-color-translucent">
+                            <h4 class="text-light">
+                                <a class="text-light" href="stocks/{{usr.name}}">{{usr.name}}</a>
+                            </h4>
+                        </div>
+                        <div class="col-2 --bs-border-color-translucent">
+                            <h4 class="text-light">{{usr.money}}</h4>
+                        </div>
+                    </div>
+                </div>    
             </div>
-        </form>
+        </div>
     {% endfor %}
 {% endblock%}
