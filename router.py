@@ -283,7 +283,15 @@ def checkStockSellsEnd():
                     stock.owner = stockSell.old_owner
             db.session.delete(stockSell)
         db.session.commit()
-        
+@app.route("/players")
+@app.route("/stocks/<username>")
+def player_stocks(username=None):
+    players = User.query.all()
+    if not username:
+        return render_template("players.html", users=players)
+    player_stocks = Stock.query.filter_by(owner=username).all()
+    return render_template("userStocks.html", stocks=player_stocks)
+
 @app.errorhandler(Exception)
 def error_site(e):
     flash(str(e))
