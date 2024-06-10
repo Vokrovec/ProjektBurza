@@ -283,7 +283,7 @@ def checkStockSellsEnd():
                     stock.owner = stockSell.old_owner
             db.session.delete(stockSell)
         db.session.commit()
-
+        
 @app.errorhandler(Exception)
 def error_site(e):
     flash(str(e))
