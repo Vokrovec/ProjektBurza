@@ -164,10 +164,9 @@ def sellStock(stock_id=-1):
         elif stock.isSelling:
             flash("Akcie je již v aukci.")
             return redirect(url_for("home"))
-        elif request.form["percent"].isdigit() and request.form["price"].isdigit() and request.form["dividend"].isdigit():
+        elif request.form["percent"].isdigit() and request.form["price"].isdigit():
             per = int(request.form["percent"])
             cost = int(request.form["price"])
-            dividend = int(request.form["dividend"])
         else:
             flash("Cena a množství musí být číslo.")
             return redirect(url_for("home"))
@@ -181,7 +180,7 @@ def sellStock(stock_id=-1):
             return redirect(url_for("home"))
         endTime = datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=minutes)
         old_stock.percentage -= per
-        new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per, dividend=dividend)
+        new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per, dividend=stock.dividend)
         new_stock.isSelling = True
         db.session.add(new_stock)
         db.session.flush()
@@ -306,13 +305,32 @@ def pay_dividend():
         for user in users:
             if user.name != stock.owner:
                 continue
-            user.money += stock.dividend * stock.percentage
-            company.money -= stock.dividend * stock.percentage
+            user.money += stock.dividend * (stock.percentage)
+            company.money -= stock.dividend * (stock.percentage)
             break
+    db.session.commit()
     flash("Dividendy vyplaceny úspěšně.")
-    return redirect(url_for("home"))
+    return redirect(url_for("admin"))
 
-@app.errorhandler(Exception)
-def error_site(e):
-    flash(str(e))
-    return redirect(url_for("home"))
+@app.route("/changedividend", methods=["POST"])
+def change_dividend():
+    if not "user" in session:
+        flash("Nejsi přihlášen!")
+        return redirect(url_for("user"))
+    if not request.form["dividend"].isdigit():
+        flash("Zadej kladné číslo jakožto dividendu, kteroužto chceš vypláceti.")
+        return redirect(url_for("user"))
+    stocks =  Stock.query.all()
+    for stock in stocks:
+        if stock.name != session["user"]:
+            continue        
+        stock.dividend = request.form["dividend"]
+        print("dividend changed")
+        print(stock.dividend)
+    db.session.commit()
+    return redirect(url_for("user"))
+
+#@app.errorhandler(Exception)
+#def error_site(e):
+#    flash(str(e))
+#    return redirect(url_for("home"))

@@ -6,8 +6,8 @@ output_min.innerHTML = slider_min.value; // Display the default slider value
 output_per.innerHTML = slider_per.value
 // Update the current slider value (each time you drag the slider handle)
 slider_min.oninput = function() {
-  if (slider_min.getAttribute("min") <= 20){
-    slider_min.setAttribute("min", 20)
+  if (slider_min.getAttribute("min") <= 10){
+    slider_min.setAttribute("min", 10)
   }
   output_min.innerHTML = this.value;
 }
