@@ -17,10 +17,12 @@ class Stock(db.Model):
     name = db.Column(db.String(40))
     percentage = db.Column(db.Integer)
     isSelling = db.Column(db.Boolean)
-    def __init__(self, owner, name, percentage):
+    dividend = db.Column(db.Integer)
+    def __init__(self, owner, name, percentage, dividend):
         self.owner = owner
         self.name = name
         self.percentage = percentage
+        self.dividend = dividend
         self.isSelling = False
         
 class StockSell(db.Model):

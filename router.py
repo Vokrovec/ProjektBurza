@@ -94,7 +94,7 @@ def addUser():
         return redirect(url_for("adminAddUser"))
     user = User(name=name, password=password, money=money)
     db.session.add(user)
-    stock = Stock(owner=name, name=name, percentage=100)
+    stock = Stock(owner=name, name=name, percentage=100, dividend=0)
     db.session.add(stock)
     db.session.commit()
     return redirect(url_for("adminAddUser"))
@@ -109,7 +109,8 @@ def delete(userId):
         db.session.commit()
         return redirect(url_for("adminAddUser"))
     else:
-        return "<h1>Tohleto se opravdu nedělá!</h1>"
+        flash("Tohleto se opravdu nedělá!")
+        return redirect(url_for("home"))
     
 @app.route("/admin/addMoney", methods=["GET"])
 @app.route("/admin/addMoney/<userId>", methods=["POST"])
@@ -163,9 +164,10 @@ def sellStock(stock_id=-1):
         elif stock.isSelling:
             flash("Akcie je již v aukci.")
             return redirect(url_for("home"))
-        elif request.form["percent"].isdigit() and request.form["price"].isdigit():
+        elif request.form["percent"].isdigit() and request.form["price"].isdigit() and request.form["dividend"].isdigit():
             per = int(request.form["percent"])
             cost = int(request.form["price"])
+            dividend = int(request.form["dividend"])
         else:
             flash("Cena a množství musí být číslo.")
             return redirect(url_for("home"))
@@ -179,7 +181,7 @@ def sellStock(stock_id=-1):
             return redirect(url_for("home"))
         endTime = datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=minutes)
         old_stock.percentage -= per
-        new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per)
+        new_stock = Stock(owner=session["user"], name=old_stock.name, percentage=per, dividend=dividend)
         new_stock.isSelling = True
         db.session.add(new_stock)
         db.session.flush()
@@ -291,6 +293,24 @@ def player_stocks(username=None):
         return render_template("players.html", users=players)
     player_stocks = Stock.query.filter_by(owner=username).all()
     return render_template("userStocks.html", stocks=player_stocks)
+
+@app.route("/paydividend", methods=["POST"])
+def pay_dividend():
+    if "adminLogin" not in session:
+        flash("Nejsi admin.")
+        return redirect(url_for("home"))
+    stocks = Stock.query.all()
+    users = User.query.all()
+    for stock in stocks:
+        company = User.query.filter_by(name=stock.name).first()
+        for user in users:
+            if user.name != stock.owner:
+                continue
+            user.money += stock.dividend * stock.percentage
+            company.money -= stock.dividend * stock.percentage
+            break
+    flash("Dividendy vyplaceny úspěšně.")
+    return redirect(url_for("home"))
 
 @app.errorhandler(Exception)
 def error_site(e):
