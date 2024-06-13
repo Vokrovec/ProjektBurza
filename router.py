@@ -94,7 +94,7 @@ def addUser():
         return redirect(url_for("adminAddUser"))
     user = User(name=name, password=password, money=money)
     db.session.add(user)
-    stock = Stock(owner=name, name=name, percentage=100, dividend=0)
+    stock = Stock(owner=name, name=name, percentage=10, dividend=0)
     db.session.add(stock)
     db.session.commit()
     return redirect(url_for("adminAddUser"))
@@ -318,7 +318,7 @@ def change_dividend():
         flash("Nejsi přihlášen!")
         return redirect(url_for("user"))
     if not request.form["dividend"].isdigit():
-        flash("Zadej kladné číslo jakožto dividendu, kteroužto chceš vypláceti.")
+        flash("Zadej kladné číslo, jakožto dividendu, kteroužto chceš vypláceti.")
         return redirect(url_for("user"))
     stocks =  Stock.query.all()
     for stock in stocks:
