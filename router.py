@@ -202,7 +202,7 @@ def buy():
     for s in stockSells:
         stock = Stock.query.filter_by(_id=s.stockID).first()
         end_time = f"{s.sell_end.hour}:{s.sell_end.minute}"
-        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id, end_time, s.sell_end))
+        stock_sells.append((stock.name, s.old_owner, stock.percentage, s.cost, s._id, end_time, stock.dividend))
     stock_sells.sort(key=lambda a: a[6])
     if "user" in session:
         return render_template("buy.html", stock_sells=stock_sells, logged=True)
@@ -220,7 +220,7 @@ def stockBuy(stockBuyID):
         return redirect(url_for("buy"))
     stockSell = stockSell[0]
     stock = Stock.query.filter_by(_id=stockSell.stockID).first()
-    stock_sell = [stock.name, stockSell.old_owner, stock.percentage, stockSell.cost]
+    stock_sell = [stock.name, stockSell.old_owner, stock.percentage, stockSell.cost, stock.dividend]
     if request.method == "GET":
         return render_template("stockBuy.html", stock_sell=stock_sell, logged=True)
     elif request.method == "POST":
@@ -330,7 +330,7 @@ def change_dividend():
     db.session.commit()
     return redirect(url_for("user"))
 
-#@app.errorhandler(Exception)
-#def error_site(e):
-#    flash(str(e))
-#    return redirect(url_for("home"))
+@app.errorhandler(Exception)
+def error_site(e):
+    flash(str(e))
+    return redirect(url_for("home"))
