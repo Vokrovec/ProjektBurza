@@ -13,3 +13,5 @@ nahradíte hashem (sha256) hesla, které chcete používat.
 
 Z bezpečnostních důvodů jsem odendal tlačítko smazat uřivatele, nicméně v router.py
 tato funkce stále existuje.
+
+
