@@ -1,4 +1,4 @@
-Web běží na url: https://lucky-zora-vokrovec-a06f7693.koyeb.app/
+Web už neběží na url: https://lucky-zora-vokrovec-a06f7693.koyeb.app/
 
     Jedná se o projekt, který jsem vytvořil jakožto hru pro Finanční noc,
 která se konala na našem gymnáziu. 
